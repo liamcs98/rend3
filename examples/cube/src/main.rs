@@ -99,9 +99,7 @@ impl rend3_framework::App for CubeExample {
         // We need to keep the object handle alive.
         self.object_handle = Some(renderer.add_object(object));
 
-        let view_location = glam::Vec3::new(3.0, 3.0, 5.0);
-        let view = glam::Mat4::from_euler(glam::EulerRot::XYZ, -0.55, -0.5, 0.0);
-        let view = view * glam::Mat4::from_translation(-view_location);
+        let view = glam::Mat4::look_at_rh(glam::Vec3::new(3.0, 3.0, 5.0), glam::Vec3::ZERO, glam::Vec3::Y);
 
         // Set camera's location
         renderer.set_camera_data(rend3::types::Camera {
@@ -116,7 +114,7 @@ impl rend3_framework::App for CubeExample {
             color: glam::Vec3::ONE,
             intensity: 10.0,
             // Direction will be normalized
-            direction: glam::Vec3::new(-1.0, -4.0, 2.0),
+            direction: glam::Vec3::new(-1.0, -4.0, -2.0),
             distance: 400.0,
         }));
     }
