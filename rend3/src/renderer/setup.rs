@@ -5,12 +5,13 @@ use crate::{
     InstanceAdapterDevice, Renderer, RendererInitializationError,
 };
 use parking_lot::{Mutex, RwLock};
-use rend3_types::{Camera, TextureFormat};
+use rend3_types::{Camera, Handedness, TextureFormat};
 use std::sync::Arc;
 use wgpu::TextureViewDimension;
 
 pub fn create_renderer(
     iad: InstanceAdapterDevice,
+    handedness: Handedness,
     aspect_ratio: Option<f32>,
 ) -> Result<Arc<Renderer>, RendererInitializationError> {
     profiling::scope!("Renderer::new");
@@ -18,7 +19,7 @@ pub fn create_renderer(
     let features = iad.device.features();
     let limits = iad.device.limits();
 
-    let camera_manager = RwLock::new(CameraManager::new(Camera::default(), aspect_ratio));
+    let camera_manager = RwLock::new(CameraManager::new(Camera::default(), handedness, aspect_ratio));
 
     let texture_manager_2d = RwLock::new(TextureManager::new(
         &iad.device,
@@ -57,6 +58,8 @@ pub fn create_renderer(
         adapter_info: iad.info,
         queue: iad.queue,
         device: iad.device,
+
+        handedness,
 
         camera_manager,
         mesh_manager,

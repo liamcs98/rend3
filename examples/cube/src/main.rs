@@ -47,8 +47,9 @@ fn create_mesh() -> rend3::types::Mesh {
         20, 21, 22, 22, 23, 20, // bottom
     ];
 
-    rend3::types::MeshBuilder::new(vertex_positions.to_vec())
+    rend3::types::MeshBuilder::new(vertex_positions.to_vec(), rend3::types::Handedness::Right)
         .with_indices(index_data.to_vec())
+        .with_flip_winding_order()
         .build()
         .unwrap()
 }
@@ -60,6 +61,7 @@ struct CubeExample {
 }
 
 impl rend3_framework::App for CubeExample {
+    const HANDEDNESS: rend3::types::Handedness = rend3::types::Handedness::Right;
     const DEFAULT_SAMPLE_COUNT: rend3::types::SampleCount = rend3::types::SampleCount::One;
 
     fn setup(
@@ -97,8 +99,8 @@ impl rend3_framework::App for CubeExample {
         // We need to keep the object handle alive.
         self.object_handle = Some(renderer.add_object(object));
 
-        let view_location = glam::Vec3::new(3.0, 3.0, -5.0);
-        let view = glam::Mat4::from_euler(glam::EulerRot::XYZ, -0.55, 0.5, 0.0);
+        let view_location = glam::Vec3::new(3.0, 3.0, 5.0);
+        let view = glam::Mat4::from_euler(glam::EulerRot::XYZ, -0.55, -0.5, 0.0);
         let view = view * glam::Mat4::from_translation(-view_location);
 
         // Set camera's location

@@ -1,7 +1,11 @@
 use std::sync::Arc;
 
 use arrayvec::ArrayVec;
-use rend3::{managers::MaterialManager, types::SampleCount, ModeData, RendererMode};
+use rend3::{
+    managers::MaterialManager,
+    types::{Handedness, SampleCount},
+    ModeData, RendererMode,
+};
 use wgpu::{
     BindGroupLayout, ColorTargetState, ColorWrites, CompareFunction, DepthBiasState, DepthStencilState, Device, Face,
     FragmentState, FrontFace, MultisampleState, PipelineLayoutDescriptor, PolygonMode, PrimitiveState,
@@ -29,6 +33,7 @@ pub struct BuildDepthPassShaderArgs<'a> {
 
     pub materials: &'a MaterialManager,
 
+    pub handedness: Handedness,
     pub samples: SampleCount,
     pub ty: DepthPassType,
 }
@@ -142,7 +147,10 @@ fn create_depth_inner(
         primitive: PrimitiveState {
             topology: PrimitiveTopology::TriangleList,
             strip_index_format: None,
-            front_face: FrontFace::Cw,
+            front_face: match args.handedness {
+                Handedness::Left => FrontFace::Cw,
+                Handedness::Right => FrontFace::Ccw,
+            },
             cull_mode: Some(match args.ty {
                 DepthPassType::Shadow => Face::Front,
                 DepthPassType::Prepass => Face::Back,
@@ -154,10 +162,7 @@ fn create_depth_inner(
         depth_stencil: Some(DepthStencilState {
             format: TextureFormat::Depth32Float,
             depth_write_enabled: true,
-            depth_compare: match args.ty {
-                DepthPassType::Shadow => CompareFunction::LessEqual,
-                DepthPassType::Prepass => CompareFunction::GreaterEqual,
-            },
+            depth_compare: CompareFunction::GreaterEqual,
             stencil: StencilState::default(),
             bias: match args.ty {
                 DepthPassType::Prepass => DepthBiasState::default(),

@@ -1,10 +1,7 @@
 use std::{future::Future, pin::Pin, sync::Arc};
 
 use glam::UVec2;
-use rend3::{
-    types::{SampleCount, Surface},
-    InstanceAdapterDevice, Renderer,
-};
+use rend3::{InstanceAdapterDevice, Renderer, types::{Handedness, SampleCount, Surface}};
 use winit::{
     dpi::PhysicalSize,
     event::WindowEvent,
@@ -36,6 +33,8 @@ pub enum UserResizeEvent<T: 'static> {
 }
 
 pub trait App<T: 'static = ()> {
+    /// Handedness of the renderer.
+    const HANDEDNESS: Handedness;
     /// Amount of samples the HDR renderbuffer should have. If you need to change
     /// this dynamically look at [`App::sample_count`] which defaults to this value.
     const DEFAULT_SAMPLE_COUNT: SampleCount;
@@ -184,7 +183,7 @@ pub async fn async_start<A: App + 'static>(mut app: A, window_builder: WindowBui
 
     // Make us a renderer.
     let renderer =
-        rend3::Renderer::new(iad.clone(), Some(window_size.width as f32 / window_size.height as f32)).unwrap();
+        rend3::Renderer::new(iad.clone(), A::HANDEDNESS, Some(window_size.width as f32 / window_size.height as f32)).unwrap();
 
     // Get the preferred format for the surface.
     let format = surface.get_preferred_format(&iad.adapter).unwrap();
